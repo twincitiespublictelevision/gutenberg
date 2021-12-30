@@ -12,6 +12,7 @@
 ### New Features
 
 -   Added optional support for React Fast Refresh in the `start` command. It can be activated with `--hot` CLI argument ([#28273](https://github.com/WordPress/gutenberg/pull/28273)).
+-   Scan the `src` directory for `block.json` files to detect defined scripts to use them as entry points with the `start` and `build` commands. ([#37661](https://github.com/WordPress/gutenberg/pull/37661)).
 
 ### Bug Fixes
 
