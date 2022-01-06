@@ -14,8 +14,7 @@ import { getLayoutType } from '../../layouts';
 const DEFAULT_CONTROLS = ['none', 'left', 'center', 'right', 'wide', 'full'];
 const WIDE_CONTROLS = ['wide', 'full'];
 
-export default function useAvailableAlignments(controls = DEFAULT_CONTROLS) {
-	controls = applyFilters('layout.alignments.availableControls', controls);
+export default function useAvailableAlignments(controls = applyFilters('layout.alignments.availableControls', DEFAULT_CONTROLS)) {
 
 	// Always add the `none` option if not exists.
 	if (!controls.includes('none')) {
