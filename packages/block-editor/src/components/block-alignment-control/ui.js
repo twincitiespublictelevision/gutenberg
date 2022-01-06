@@ -13,6 +13,7 @@ import {
 	MenuGroup,
 	MenuItem,
 } from '@wordpress/components';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	alignNone,
 	positionCenter,
@@ -31,27 +32,27 @@ import useAvailableAlignments from './use-available-alignments';
 const BLOCK_ALIGNMENTS_CONTROLS = {
 	none: {
 		icon: alignNone,
-		title: __( 'None' ),
+		title: __('None'),
 	},
 	left: {
 		icon: positionLeft,
-		title: __( 'Align left' ),
+		title: __('Align left'),
 	},
 	center: {
 		icon: positionCenter,
-		title: __( 'Align center' ),
+		title: __('Align center'),
 	},
 	right: {
 		icon: positionRight,
-		title: __( 'Align right' ),
+		title: __('Align right'),
 	},
 	wide: {
 		icon: stretchWide,
-		title: __( 'Wide width' ),
+		title: __('Wide width'),
 	},
 	full: {
 		icon: stretchFullWidth,
-		title: __( 'Full width' ),
+		title: __('Full width'),
 	},
 };
 
@@ -61,27 +62,28 @@ const POPOVER_PROPS = {
 	isAlternate: true,
 };
 
-function BlockAlignmentUI( {
+function BlockAlignmentUI({
 	value,
 	onChange,
 	controls,
 	isToolbar,
 	isCollapsed = true,
-} ) {
-	const enabledControls = useAvailableAlignments( controls );
-	const hasEnabledControls = !! enabledControls.length;
+}) {
+	const blockAlignmentControls = applyFilters('layout.alignments.controls', BLOCK_ALIGNMENTS_CONTROLS);
+	const enabledControls = useAvailableAlignments(controls);
+	const hasEnabledControls = !!enabledControls.length;
 
-	if ( ! hasEnabledControls ) {
+	if (!hasEnabledControls) {
 		return null;
 	}
 
-	function onChangeAlignment( align ) {
-		onChange( [ value, 'none' ].includes( align ) ? undefined : align );
+	function onChangeAlignment(align) {
+		onChange([value, 'none'].includes(align) ? undefined : align);
 	}
 
-	const activeAlignmentControl = BLOCK_ALIGNMENTS_CONTROLS[ value ];
+	const activeAlignmentControl = blockAlignmentControls[value];
 	const defaultAlignmentControl =
-		BLOCK_ALIGNMENTS_CONTROLS[ DEFAULT_CONTROL ];
+		blockAlignmentControls[DEFAULT_CONTROL];
 
 	const UIComponent = isToolbar ? ToolbarGroup : ToolbarDropdownMenu;
 	const commonProps = {
@@ -89,77 +91,77 @@ function BlockAlignmentUI( {
 		icon: activeAlignmentControl
 			? activeAlignmentControl.icon
 			: defaultAlignmentControl.icon,
-		label: __( 'Align' ),
-		toggleProps: { describedBy: __( 'Change alignment' ) },
+		label: __('Align'),
+		toggleProps: { describedBy: __('Change alignment') },
 	};
 	const extraProps =
 		isToolbar || Platform.isNative
 			? {
-					isCollapsed: isToolbar ? isCollapsed : undefined,
-					controls: enabledControls.map(
-						( { name: controlName } ) => {
-							return {
-								...BLOCK_ALIGNMENTS_CONTROLS[ controlName ],
-								isActive:
-									value === controlName ||
-									( ! value && controlName === 'none' ),
-								role: isCollapsed ? 'menuitemradio' : undefined,
-								onClick: () => onChangeAlignment( controlName ),
-							};
-						}
-					),
-			  }
+				isCollapsed: isToolbar ? isCollapsed : undefined,
+				controls: enabledControls.map(
+					({ name: controlName }) => {
+						return {
+							...blockAlignmentControls[controlName],
+							isActive:
+								value === controlName ||
+								(!value && controlName === 'none'),
+							role: isCollapsed ? 'menuitemradio' : undefined,
+							onClick: () => onChangeAlignment(controlName),
+						};
+					}
+				),
+			}
 			: {
-					children: ( { onClose } ) => {
-						return (
-							<>
-								<MenuGroup className="block-editor-block-alignment-control__menu-group">
-									{ enabledControls.map(
-										( { name: controlName, info } ) => {
-											const {
-												icon,
-												title,
-											} = BLOCK_ALIGNMENTS_CONTROLS[
-												controlName
+				children: ({ onClose }) => {
+					return (
+						<>
+							<MenuGroup className="block-editor-block-alignment-control__menu-group">
+								{enabledControls.map(
+									({ name: controlName, info }) => {
+										const {
+											icon,
+											title,
+										} = blockAlignmentControls[
+											controlName
 											];
-											// If no value is provided, mark as selected the `none` option.
-											const isSelected =
-												controlName === value ||
-												( ! value &&
-													controlName === 'none' );
-											return (
-												<MenuItem
-													key={ controlName }
-													icon={ icon }
-													iconPosition="left"
-													className={ classNames(
-														'components-dropdown-menu__menu-item',
-														{
-															'is-active': isSelected,
-														}
-													) }
-													isSelected={ isSelected }
-													onClick={ () => {
-														onChangeAlignment(
-															controlName
-														);
-														onClose();
-													} }
-													role="menuitemradio"
-													info={ info }
-												>
-													{ title }
-												</MenuItem>
-											);
-										}
-									) }
-								</MenuGroup>
-							</>
-						);
-					},
-			  };
+										// If no value is provided, mark as selected the `none` option.
+										const isSelected =
+											controlName === value ||
+											(!value &&
+												controlName === 'none');
+										return (
+											<MenuItem
+												key={controlName}
+												icon={icon}
+												iconPosition="left"
+												className={classNames(
+													'components-dropdown-menu__menu-item',
+													{
+														'is-active': isSelected,
+													}
+												)}
+												isSelected={isSelected}
+												onClick={() => {
+													onChangeAlignment(
+														controlName
+													);
+													onClose();
+												}}
+												role="menuitemradio"
+												info={info}
+											>
+												{title}
+											</MenuItem>
+										);
+									}
+								)}
+							</MenuGroup>
+						</>
+					);
+				},
+			};
 
-	return <UIComponent { ...commonProps } { ...extraProps } />;
+	return <UIComponent {...commonProps} {...extraProps} />;
 }
 
 export default BlockAlignmentUI;
