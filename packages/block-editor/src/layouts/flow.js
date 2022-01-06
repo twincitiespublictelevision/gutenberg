@@ -6,6 +6,7 @@ import {
 	__experimentalUseCustomUnits as useCustomUnits,
 	__experimentalUnitControl as UnitControl,
 } from '@wordpress/components';
+import { applyFilters } from '@wordpress/hooks';
 import { __, sprintf } from '@wordpress/i18n';
 import { Icon, positionCenter, stretchWide } from '@wordpress/icons';
 
@@ -17,87 +18,87 @@ import { appendSelectors } from './utils';
 
 export default {
 	name: 'default',
-	label: __( 'Flow' ),
-	inspectorControls: function DefaultLayoutInspectorControls( {
+	label: __('Flow'),
+	inspectorControls: function DefaultLayoutInspectorControls({
 		layout,
 		onChange,
-	} ) {
+	}) {
 		const { wideSize, contentSize } = layout;
-		const units = useCustomUnits( {
-			availableUnits: useSetting( 'spacing.units' ) || [
+		const units = useCustomUnits({
+			availableUnits: useSetting('spacing.units') || [
 				'%',
 				'px',
 				'em',
 				'rem',
 				'vw',
 			],
-		} );
+		});
 
 		return (
 			<>
 				<div className="block-editor-hooks__layout-controls">
 					<div className="block-editor-hooks__layout-controls-unit">
 						<UnitControl
-							label={ __( 'Content' ) }
+							label={__('Content')}
 							labelPosition="top"
 							__unstableInputWidth="80px"
-							value={ contentSize || wideSize || '' }
-							onChange={ ( nextWidth ) => {
+							value={contentSize || wideSize || ''}
+							onChange={(nextWidth) => {
 								nextWidth =
-									0 > parseFloat( nextWidth )
+									0 > parseFloat(nextWidth)
 										? '0'
 										: nextWidth;
-								onChange( {
+								onChange({
 									...layout,
 									contentSize: nextWidth,
-								} );
-							} }
-							units={ units }
+								});
+							}}
+							units={units}
 						/>
-						<Icon icon={ positionCenter } />
+						<Icon icon={positionCenter} />
 					</div>
 					<div className="block-editor-hooks__layout-controls-unit">
 						<UnitControl
-							label={ __( 'Wide' ) }
+							label={__('Wide')}
 							labelPosition="top"
 							__unstableInputWidth="80px"
-							value={ wideSize || contentSize || '' }
-							onChange={ ( nextWidth ) => {
+							value={wideSize || contentSize || ''}
+							onChange={(nextWidth) => {
 								nextWidth =
-									0 > parseFloat( nextWidth )
+									0 > parseFloat(nextWidth)
 										? '0'
 										: nextWidth;
-								onChange( {
+								onChange({
 									...layout,
 									wideSize: nextWidth,
-								} );
-							} }
-							units={ units }
+								});
+							}}
+							units={units}
 						/>
-						<Icon icon={ stretchWide } />
+						<Icon icon={stretchWide} />
 					</div>
 				</div>
 				<div className="block-editor-hooks__layout-controls-reset">
 					<Button
 						variant="secondary"
 						isSmall
-						disabled={ ! contentSize && ! wideSize }
-						onClick={ () =>
-							onChange( {
+						disabled={!contentSize && !wideSize}
+						onClick={() =>
+							onChange({
 								contentSize: undefined,
 								wideSize: undefined,
 								inherit: false,
-							} )
+							})
 						}
 					>
-						{ __( 'Reset' ) }
+						{__('Reset')}
 					</Button>
 				</div>
 
 				<p className="block-editor-hooks__layout-controls-helptext">
-					{ __(
+					{__(
 						'Customize the width for all elements that are assigned to the center or wide columns.'
-					) }
+					)}
 				</p>
 			</>
 		);
@@ -105,72 +106,72 @@ export default {
 	toolBarControls: function DefaultLayoutToolbarControls() {
 		return null;
 	},
-	save: function DefaultLayoutStyle( { selector, layout = {}, style } ) {
+	save: function DefaultLayoutStyle({ selector, layout = {}, style }) {
 		const { contentSize, wideSize } = layout;
-		const blockGapSupport = useSetting( 'spacing.blockGap' );
+		const blockGapSupport = useSetting('spacing.blockGap');
 		const hasBlockGapStylesSupport = blockGapSupport !== null;
 		const blockGapValue =
 			style?.spacing?.blockGap ?? 'var( --wp--style--block-gap )';
 
 		let output =
-			!! contentSize || !! wideSize
+			!!contentSize || !!wideSize
 				? `
-					${ appendSelectors( selector, '> *' ) } {
-						max-width: ${ contentSize ?? wideSize };
+					${appendSelectors(selector, '> *')} {
+						max-width: ${contentSize ?? wideSize};
 						margin-left: auto !important;
 						margin-right: auto !important;
 					}
 
-					${ appendSelectors( selector, '> [data-align="wide"]' ) }  {
-						max-width: ${ wideSize ?? contentSize };
+					${appendSelectors(selector, '> [data-align="wide"]')}  {
+						max-width: ${wideSize ?? contentSize};
 					}
 
-					${ appendSelectors( selector, '> [data-align="full"]' ) } {
+					${appendSelectors(selector, '> [data-align="full"]')} {
 						max-width: none;
 					}
 				`
 				: '';
 
 		output += `
-			${ appendSelectors( selector, '> [data-align="left"]' ) } {
+			${appendSelectors(selector, '> [data-align="left"]')} {
 				float: left;
 				margin-right: 2em;
 			}
 
-			${ appendSelectors( selector, '> [data-align="right"]' ) } {
+			${appendSelectors(selector, '> [data-align="right"]')} {
 				float: right;
 				margin-left: 2em;
 			}
 
 		`;
 
-		if ( hasBlockGapStylesSupport ) {
+		if (hasBlockGapStylesSupport) {
 			output += `
-				${ appendSelectors( selector, '> *' ) } {
+				${appendSelectors(selector, '> *')} {
 					margin-top: 0;
 					margin-bottom: 0;
 				}
-				${ appendSelectors( selector, '> * + *' ) } {
-					margin-top: ${ blockGapValue };
+				${appendSelectors(selector, '> * + *')} {
+					margin-top: ${blockGapValue};
 				}
 			`;
 		}
 
-		return <style>{ output }</style>;
+		return <style>{output}</style>;
 	},
 	getOrientation() {
 		return 'vertical';
 	},
-	getAlignments( layout ) {
-		const alignmentInfo = getAlignmentsInfo( layout );
-		if ( layout.alignments !== undefined ) {
-			if ( ! layout.alignments.includes( 'none' ) ) {
-				layout.alignments.unshift( 'none' );
+	getAlignments(layout) {
+		const alignmentInfo = getAlignmentsInfo(layout);
+		if (layout.alignments !== undefined) {
+			if (!layout.alignments.includes('none')) {
+				layout.alignments.unshift('none');
 			}
-			return layout.alignments.map( ( alignment ) => ( {
+			return layout.alignments.map((alignment) => ({
 				name: alignment,
-				info: alignmentInfo[ alignment ],
-			} ) );
+				info: alignmentInfo[alignment],
+			}));
 		}
 		const { contentSize, wideSize } = layout;
 
@@ -180,17 +181,17 @@ export default {
 			{ name: 'right' },
 		];
 
-		if ( contentSize ) {
-			alignments.unshift( { name: 'full' } );
+		if (contentSize) {
+			alignments.unshift({ name: 'full' });
 		}
 
-		if ( wideSize ) {
-			alignments.unshift( { name: 'wide', info: alignmentInfo.wide } );
+		if (wideSize) {
+			alignments.unshift({ name: 'wide', info: alignmentInfo.wide });
 		}
 
-		alignments.unshift( { name: 'none', info: alignmentInfo.none } );
+		alignments.unshift({ name: 'none', info: alignmentInfo.none });
 
-		return alignments;
+		return applyFilters('layout.alignments', alignments);
 	},
 };
 
@@ -208,17 +209,17 @@ export default {
  * @param {Object} layout The layout object.
  * @return {Object} An object with contextual info per alignment.
  */
-function getAlignmentsInfo( layout ) {
+function getAlignmentsInfo(layout) {
 	const { contentSize, wideSize } = layout;
 	const alignmentInfo = {};
 	const sizeRegex = /^(?!0)\d+(px|em|rem|vw|vh|%)?$/i;
-	if ( sizeRegex.test( contentSize ) ) {
+	if (sizeRegex.test(contentSize)) {
 		// translators: %s: container size (i.e. 600px etc)
-		alignmentInfo.none = sprintf( __( 'Max %s wide' ), contentSize );
+		alignmentInfo.none = sprintf(__('Max %s wide'), contentSize);
 	}
-	if ( sizeRegex.test( wideSize ) ) {
+	if (sizeRegex.test(wideSize)) {
 		// translators: %s: container size (i.e. 600px etc)
-		alignmentInfo.wide = sprintf( __( 'Max %s wide' ), wideSize );
+		alignmentInfo.wide = sprintf(__('Max %s wide'), wideSize);
 	}
 	return alignmentInfo;
 }
